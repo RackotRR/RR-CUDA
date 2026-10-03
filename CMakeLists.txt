@@ -3,6 +3,9 @@ project(RRCUDA)
 
 include(CheckLanguage)
 check_language(CUDA)
+
+option(RR_CUDA_ARCH "CUSTOM CUDA ARCHITECTURE")
+
 if (CMAKE_CUDA_COMPILER)
     message("CUDA compiler found. Enable RRCUDA module")
     enable_language(CUDA)
