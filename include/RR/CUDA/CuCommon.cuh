@@ -18,7 +18,7 @@ namespace RR::CUDA {
         cudaError_t error_code
     ) {
         return func_name + " error: " +
-            cudaGetErrorName(error_code) + 
+            cudaGetErrorName(error_code) +
             '(' + cudaGetErrorString(error_code) + ')';
     }
 
@@ -26,7 +26,7 @@ namespace RR::CUDA {
         auto result = cudaDeviceSynchronize();
 
         if (result != cudaSuccess) {
-            throw std::runtime_error{ 
+            throw std::runtime_error{
                 formatError(
                     "cudaDeviceSynchronize",
                     result
@@ -47,7 +47,7 @@ namespace RR::CUDA {
         CuDeviceSync();
 
         if (result != cudaSuccess) {
-            throw std::runtime_error{ 
+            throw std::runtime_error{
                 formatError(
                     "cudaMemcpyToSymbol",
                     result
@@ -61,13 +61,14 @@ namespace RR::CUDA {
         FuncT func;
         dim3 blocks_per_grid;
         dim3 threads_per_block;
+        unsigned shared_mem_size;
 
         template<typename... Args>
         auto operator() (Args&&... args) {
-            func<<<blocks_per_grid, threads_per_block>>>(args...);
+            func<<<blocks_per_grid, threads_per_block, shared_mem_size>>>(args...);
             auto result = cudaDeviceSynchronize();
             if (result != cudaSuccess) {
-                throw std::runtime_error{ 
+                throw std::runtime_error{
                     formatError(
                         "cuda invoke kernel",
                         result
@@ -81,10 +82,11 @@ namespace RR::CUDA {
     CuCallImpl<FuncT> CuCall(
         FuncT func,
         const dim3& blocks_per_grid,
-        const dim3& threads_per_block
+        const dim3& threads_per_block,
+        const unsigned shared_mem_size = 0
     )
     {
-        return CuCallImpl<FuncT>{ func, blocks_per_grid, threads_per_block };
+        return CuCallImpl<FuncT>{ func, blocks_per_grid, threads_per_block, shared_mem_size };
     }
 
     class CuDarrayBase {
@@ -141,7 +143,7 @@ namespace RR::CUDA {
         void set_zero() {
             auto result = cudaMemset(ptr, 0, get_allocated());
             if (result != cudaSuccess) {
-                throw std::runtime_error{ 
+                throw std::runtime_error{
                     formatError(
                         "cudaMemset",
                         result
@@ -159,7 +161,7 @@ namespace RR::CUDA {
 
             auto result = cudaMemcpy(ptr, host.data(), get_allocated(), ToDevice);
             if (result != cudaSuccess) {
-                throw std::runtime_error{ 
+                throw std::runtime_error{
                     formatError(
                         "cudaMemcpy to device",
                         result
@@ -173,7 +175,7 @@ namespace RR::CUDA {
             host.resize(N);
             auto result = cudaMemcpy(host.data(), ptr, get_allocated(), ToHost);
             if (result != cudaSuccess) {
-                throw std::runtime_error{ 
+                throw std::runtime_error{
                     formatError(
                         "cudaMemcpy to host",
                         result
@@ -213,7 +215,7 @@ namespace RR::CUDA {
             );
 
             if (result != cudaSuccess) {
-                throw std::runtime_error{ 
+                throw std::runtime_error{
                     formatError(
                         "cudaMalloc",
                         result
@@ -269,7 +271,7 @@ namespace RR::CUDA {
             auto result = cudaEventElapsedTime(&ms, start_, stop_);
 
             if (result != cudaSuccess) {
-                throw std::runtime_error{ 
+                throw std::runtime_error{
                     formatError(
                         "cudaEventElapsedTime",
                         result
