@@ -35,27 +35,6 @@ namespace RR::CUDA {
         }
     }
 
-    template<typename T>
-    void CuCopyToSymbol(const T& from, T& to, int kind) {
-        auto result = cudaMemcpyToSymbol(
-            to,
-            &from,
-            sizeof(T),
-            0,
-            (cudaMemcpyKind)kind
-        );
-        CuDeviceSync();
-
-        if (result != cudaSuccess) {
-            throw std::runtime_error{
-                formatError(
-                    "cudaMemcpyToSymbol",
-                    result
-                )
-            };
-        }
-    }
-
     template<typename FuncT>
     struct CuCallImpl {
         FuncT func;
@@ -288,5 +267,46 @@ namespace RR::CUDA {
     private:
         CuEvent start_, stop_;
     };
+
+    template<typename T>
+    void CuCopyFromTo(const CuDarray<T>& from, CuDarray<T>& to, int kind) {
+        auto result = cudaMemcpy(
+            to,
+            from,
+            from.get_allocated(),
+            (cudaMemcpyKind)kind
+        );
+        CuDeviceSync();
+
+        if (result != cudaSuccess) {
+            throw std::runtime_error{
+                formatError(
+                    "cudaMemcpy",
+                    result
+                )
+            };
+        }
+    }
+
+    template<typename T>
+    void CuCopyToSymbol(const T& from, T& to, int kind) {
+        auto result = cudaMemcpyToSymbol(
+            to,
+            &from,
+            sizeof(T),
+            0,
+            (cudaMemcpyKind)kind
+        );
+        CuDeviceSync();
+
+        if (result != cudaSuccess) {
+            throw std::runtime_error{
+                formatError(
+                    "cudaMemcpyToSymbol",
+                    result
+                )
+            };
+        }
+    }
 
 }
