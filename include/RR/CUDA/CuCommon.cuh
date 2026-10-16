@@ -309,4 +309,23 @@ namespace RR::CUDA {
         }
     }
 
+    inline std::vector<cudaDeviceProp> CuGetDevices() {
+        int deviceCount = 0;
+        cudaError_t result = cudaGetDeviceCount(&deviceCount);
+        if (result != cudaSuccess) {
+            throw std::runtime_error{
+                formatError(
+                    "cudaGetDeviceCount",
+                    result
+                )
+            };
+        }
+
+        std::vector<cudaDeviceProp> devices(deviceCount);
+        for (int i = 0; i < deviceCount; i++){
+            cudaGetDeviceProperties(&devices[i], i);
+        }
+        return devices;
+    }
+
 }
