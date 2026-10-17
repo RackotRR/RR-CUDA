@@ -10,6 +10,7 @@ if (CMAKE_CUDA_COMPILER)
     message("CUDA compiler found. Enable RRCUDA module")
     enable_language(CUDA)
     add_library(RRCUDA INTERFACE)
+    add_library(RR::CUDA ALIAS RRCUDA)
     set_target_properties(RRCUDA
         PROPERTIES
             CUDA_SEPARABLE_COMPILATION ON
