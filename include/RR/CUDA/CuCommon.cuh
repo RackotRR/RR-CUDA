@@ -170,8 +170,40 @@ namespace RR::CUDA {
             return host;
         }
 
+        template<typename T>
+        void to_mem(T& host) const {
+            if (sizeof(host) != get_allocated()) {
+                throw std::runtime_error{
+                    "to_mem error: host size is not enough"
+                };
+            }
+
+            auto result = cudaMemcpy(&host, ptr, get_allocated(), ToHost);
+            if (result != cudaSuccess) {
+                throw std::runtime_error{
+                    formatError(
+                        "cudaMemcpy to host",
+                        result
+                    )
+                };
+            }
+
+            CuDeviceSync();
+        }
+
+        template<typename T>
+        T to_mem() const {
+            T mem;
+            std::memset(&mem, 0, sizeof(mem));
+            to_mem(mem);
+            return mem;
+        }
+
         size_t get_allocated() const {
             return N * sizeof(T);
+        }
+        size_t size() const {
+            return N;
         }
 
         operator T* () const {
