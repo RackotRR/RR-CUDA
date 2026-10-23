@@ -47,9 +47,12 @@ namespace RR::CUDA {
             func<<<blocks_per_grid, threads_per_block, shared_mem_size>>>(args...);
             auto result = cudaDeviceSynchronize();
             if (result != cudaSuccess) {
+                const char* kernel_name = "UNKNOWN";
+                cudaFuncGetName(&kernel_name, (const void*)func);
+
                 throw std::runtime_error{
                     formatError(
-                        "cuda invoke kernel",
+                        "cuda invoke kernel (" + std::string(kernel_name) + ")",
                         result
                     )
                 };
@@ -228,7 +231,7 @@ namespace RR::CUDA {
             if (result != cudaSuccess) {
                 throw std::runtime_error{
                     formatError(
-                        "cudaMalloc",
+                        "cudaMalloc( " + std::to_string(need_mem) + " bytes)",
                         result
                     )
                 };
