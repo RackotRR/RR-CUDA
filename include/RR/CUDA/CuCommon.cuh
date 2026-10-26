@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <cstring>
 #include <cstdint>
 #include <cstdlib>
 #include <vector>
@@ -173,11 +174,10 @@ namespace RR::CUDA {
             return host;
         }
 
-        template<typename T>
         void to_mem(T& host) const {
-            if (sizeof(host) != get_allocated()) {
+            if (N != 1) {
                 throw std::runtime_error{
-                    "to_mem error: host size is not enough"
+                    "to_mem error: allowed to copy single value only"
                 };
             }
 
@@ -194,7 +194,6 @@ namespace RR::CUDA {
             CuDeviceSync();
         }
 
-        template<typename T>
         T to_mem() const {
             T mem;
             std::memset(&mem, 0, sizeof(mem));
